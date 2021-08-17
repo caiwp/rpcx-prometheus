@@ -49,11 +49,8 @@ type Unit struct {
 }
 
 func NewUnit(service, method, tag string) *Unit {
-	u := &Unit{
-		startAt: time.Now(),
-	}
 	std.startedCounter.WithLabelValues(service, method, tag).Inc()
-	return u
+	return &Unit{startAt: time.Now()}
 }
 
 func (u *Unit) Handle(service, method, tag string, code Code) {
