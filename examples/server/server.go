@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	s := server.NewServer()
-	s.Plugins.Add(prom.NewPrometheusPlugin("demoTag"))
+	s.Plugins.Add(prom.NewPrometheusPlugin("demoTag", "/metrics"))
 	//s.Register(new(Arith), "")
 	s.RegisterName("Arith", new(Arith), "")
 

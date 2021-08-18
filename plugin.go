@@ -40,10 +40,10 @@ func (p PrometheusPlugin) PostWriteResponse(ctx context.Context, req *protocol.M
 	return nil
 }
 
-func NewPrometheusPlugin(tag string) *PrometheusPlugin {
+func NewPrometheusPlugin(tag, pattern string) *PrometheusPlugin {
 	initMetrics()
 
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle(pattern, promhttp.Handler())
 
 	return &PrometheusPlugin{
 		Tag: tag,
