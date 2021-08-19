@@ -2,38 +2,42 @@ package metric
 
 import (
 	"context"
+	"github.com/smallnest/rpcx/server"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/smallnest/rpcx/protocol"
-	"github.com/smallnest/rpcx/share"
 )
-
-const key = "prom_unit"
 
 type PrometheusPlugin struct {
 	Tag string
 }
 
 func (p PrometheusPlugin) PreHandleRequest(ctx context.Context, r *protocol.Message) error {
-	u := NewUnit(r.ServicePath, r.ServiceMethod, p.Tag)
-	c, ok := ctx.(*share.Context)
-	if ok {
-		c.SetValue(key, u)
-	}
-
+	std.startedCounter.WithLabelValues(r.ServicePath, r.ServiceMethod, p.Tag).Inc()
 	return nil
 }
 
 func (p PrometheusPlugin) PostWriteResponse(ctx context.Context, req *protocol.Message, res *protocol.Message, err error) error {
-	if c, ok := ctx.(*share.Context); ok {
-		u, ok := c.Value(key).(*Unit)
-		if ok {
-			if err != nil {
-				u.Handle(req.ServicePath, req.ServiceMethod, p.Tag, Failure)
-			} else {
-				u.Handle(req.ServicePath, req.ServiceMethod, p.Tag, Success)
-			}
+	sp := res.ServicePath
+	sm := res.ServiceMethod
+
+	if sp == "" {
+		return nil
+	}
+
+	if err != nil {
+		std.handledCounter.WithLabelValues(sp, sm, p.Tag, string(Failure)).Inc()
+	} else {
+		std.handledCounter.WithLabelValues(sp, sm, p.Tag, string(Success)).Inc()
+	}
+
+	t := ctx.Value(server.StartRequestContextKey).(int64)
+	if t > 0 {
+		t = time.Now().UnixNano()-t
+		if t < 10*time.Minute.Nanoseconds() {
+			std.handledHistogram.WithLabelValues(sp, sm, p.Tag).Observe(float64(t))
 		}
 	}
 

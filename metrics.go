@@ -1,8 +1,6 @@
 package metric
 
 import (
-	"time"
-
 	prom "github.com/prometheus/client_golang/prometheus"
 )
 
@@ -43,17 +41,3 @@ const (
 	Success Code = "Success"
 	Failure Code = "Failure"
 )
-
-type Unit struct {
-	startAt time.Time
-}
-
-func NewUnit(service, method, tag string) *Unit {
-	std.startedCounter.WithLabelValues(service, method, tag).Inc()
-	return &Unit{startAt: time.Now()}
-}
-
-func (u *Unit) Handle(service, method, tag string, code Code) {
-	std.handledCounter.WithLabelValues(service, method, tag, string(code)).Inc()
-	std.handledHistogram.WithLabelValues(service, method, tag).Observe(time.Since(u.startAt).Seconds())
-}
