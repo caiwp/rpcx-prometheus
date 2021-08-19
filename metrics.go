@@ -14,21 +14,21 @@ type Metrics struct {
 
 var std *Metrics
 
-func initMetrics() {
+func initMetrics(name string) {
 	std = &Metrics{
 		startedCounter: prom.NewCounterVec(
 			prom.CounterOpts{
-				Name: "server_started_total",
+				Name: name+"_started_total",
 				Help: "Total number started on the server.",
 			}, []string{"service", "method", "tag"}),
 		handledCounter: prom.NewCounterVec(
 			prom.CounterOpts{
-				Name: "server_handled_total",
+				Name: name+"_handled_total",
 				Help: "Total number completed on the server, regardless of success or failure.",
 			}, []string{"service", "method", "tag", "code"}),
 		handledHistogram: prom.NewHistogramVec(
 			prom.HistogramOpts{
-				Name:    "server_handling_seconds",
+				Name:    name+"_handling_seconds",
 				Help:    "Histogram of response latency (seconds) that had been application-level handled by the server.",
 				Buckets: prom.DefBuckets,
 			}, []string{"service", "method", "tag"}),
