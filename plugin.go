@@ -2,12 +2,9 @@ package metric
 
 import (
 	"context"
-	"github.com/smallnest/rpcx/server"
-	"net/http"
-	"time"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/smallnest/rpcx/protocol"
+	"net/http"
 )
 
 type PrometheusPlugin struct {
@@ -31,14 +28,6 @@ func (p PrometheusPlugin) PostWriteResponse(ctx context.Context, req *protocol.M
 		std.handledCounter.WithLabelValues(sp, sm, p.Tag, string(Failure)).Inc()
 	} else {
 		std.handledCounter.WithLabelValues(sp, sm, p.Tag, string(Success)).Inc()
-	}
-
-	t := ctx.Value(server.StartRequestContextKey).(int64)
-	if t > 0 {
-		t = time.Now().UnixNano()-t
-		if t < 10*time.Minute.Nanoseconds() {
-			std.handledHistogram.WithLabelValues(sp, sm, p.Tag).Observe(float64(t))
-		}
 	}
 
 	return nil

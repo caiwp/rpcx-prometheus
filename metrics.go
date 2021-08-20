@@ -7,7 +7,6 @@ import (
 type Metrics struct {
 	startedCounter   *prom.CounterVec
 	handledCounter   *prom.CounterVec
-	handledHistogram *prom.HistogramVec
 }
 
 var std *Metrics
@@ -24,15 +23,9 @@ func initMetrics(name string) {
 				Name: name+"_handled_total",
 				Help: "Total number completed on the server, regardless of success or failure.",
 			}, []string{"service", "method", "tag", "code"}),
-		handledHistogram: prom.NewHistogramVec(
-			prom.HistogramOpts{
-				Name:    name+"_handling_seconds",
-				Help:    "Histogram of response latency (seconds) that had been application-level handled by the server.",
-				Buckets: prom.DefBuckets,
-			}, []string{"service", "method", "tag"}),
 	}
 
-	prom.MustRegister(std.startedCounter, std.handledCounter, std.handledHistogram)
+	prom.MustRegister(std.startedCounter, std.handledCounter)
 }
 
 type Code string
